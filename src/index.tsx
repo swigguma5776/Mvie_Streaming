@@ -1,7 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
+import { Home, Watchlist, Browse, SignIn } from './components'; 
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ThemeProvider } from '@mui/material/styles';
+import { theme } from './Theme/themes'; 
+import { Provider } from 'react-redux';
+import { store } from './redux/store';
+import './styles.css'; 
+
+
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(
@@ -9,7 +16,18 @@ const root = ReactDOM.createRoot(
 );
 root.render(
   <React.StrictMode>
-    <App />
+    <Provider store = {store}>
+      <ThemeProvider theme={theme}>
+        <Router>
+          <Routes>
+            <Route path='/' element ={<Home title={'Mvie'} />} />
+            <Route path='/watchlist' element={<Watchlist />} />
+            <Route path='/browse' element={<Browse />} />
+            <Route path='/signin' element ={<SignIn title={'Mvie'} />} />
+          </Routes>
+        </Router>
+      </ThemeProvider>
+    </Provider>
   </React.StrictMode>
 );
 
