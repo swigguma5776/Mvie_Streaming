@@ -97,6 +97,9 @@ export const Browse = (props:BrowseForm) => {
           let browseData: any = await store.getState()
           await serverCalls.createCast(browseData.cast)
         }
+
+        window.location.reload()
+        
     }
 
     return(
@@ -136,24 +139,25 @@ export const Browse = (props:BrowseForm) => {
               <Grid item key={index} xs={12} sm={6} md={3}>
                 <Card
                   sx={{
-                    height: "400px",
+                    height: "475px",
                     width: "250px", 
                     display: "flex",
                     flexDirection: "column",
                     backgroundColor: "#1B2929",
-                    opacity: '66%'
+                    opacity: '66%',
+                    borderRadius: '10px'
                   }}
                 >
                   <CardMedia
                     component="img"
                     sx={{
                       pt: "0",
-                      height: "250px",
+                      height: "325px",
                     }}
-                    image={browse.poster_path}
+                    image={`https://image.tmdb.org/t/p/w500${browse.poster_path}`}
                     alt={browse.original_title}
                   />
-                  <CardContent sx={{ flexGrow: 1, paddingBottom: 5 }}>
+                  <CardContent sx={{ flexGrow: 1, maxHeight: '100px', marginBottom: '10px'}}>
                     <Typography variant="h5" component="h2" sx={{color: 'white'}}>
                       {browse.title || browse.name} 
                     </Typography>
@@ -167,7 +171,7 @@ export const Browse = (props:BrowseForm) => {
                       size="small"
                       variant='contained'
                       color="secondary"
-                      onClick={() => addToWatchlist(browse)}
+                      onClick={() => {addToWatchlist(browse)}}
                     >
                       Add to WatchList
                     </Button> 

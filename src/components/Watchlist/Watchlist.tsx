@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { Button,
-     Typography, 
-     Stack, 
-     Box, 
-     Dialog,
-     DialogActions,
-     DialogContent, 
-     DialogContentText,
-     DialogTitle, } from '@mui/material'; 
+    Typography, 
+    Stack, 
+    Box, 
+    Divider,
+    Dialog,
+    DialogActions,
+    DialogContent, 
+    DialogContentText,
+    DialogTitle, 
+    Avatar } from '@mui/material'; 
 import { styled } from '@mui/system'; 
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
@@ -24,6 +26,8 @@ import { HomeNavBar } from '../sharedComponents/NavBar';
 import { ViewDetails } from '../ViewDetails'; 
 import { useGetData } from '../../custom-hooks';
 import { useNavigate } from 'react-router-dom';
+import { serverCalls } from '../../api';
+import { Review, ReviewScore } from '../Forms';
 
 
 const Root = styled("div")({
@@ -51,17 +55,47 @@ const Root = styled("div")({
 export const Watchlist = () => {
     let { browseData, getData} = useGetData(); 
     let [currentData, setCurrentData] = useState<any>({})
+    let [castData, setCastData] = useState<any>([])
     const [detailsOpen, setDetailsOpen] = useState(false);
+    const [reviewOpen, setReviewOpen] = useState(false);
+    const [reviewType, setReviewType] = useState<string>()
+
+    const navigate = useNavigate()
 
     const chooseColor = (type: string) => {
         return (type === 'movie') ? 'orange' : 'purple'
     }
 
+    const handleDetailsOpen = async () => {
+        setCastData(await serverCalls.getCast(currentData.watch_id))
+        setDetailsOpen(true);
+      };
+
     const handleDetailsClose = () => {
         setDetailsOpen(false);
       };
 
+    const handleReviewClose = () => {
+        setReviewOpen(false);
+      };
+
+
     console.log(currentData)
+
+    const deleteFromWatchlist = async (id: string) => {
+        await serverCalls.deleteShow(id)
+        window.location.reload()
+    }
+
+    const updateWatchlist = async () => {
+        let data
+        currentData.have_watched == false ? data = {"haveWatched": true} : data = {"haveWatched": false}
+
+        await serverCalls.updateShow(data, currentData.watch_id)
+        window.location.reload()
+    }
+
+    console.log(castData)
 
 
     return(
@@ -73,12 +107,12 @@ export const Watchlist = () => {
                 sx = {{marginTop: '100px', marginLeft: '15vh', color: "white"}}>
                 Your Watchlist
                 </Typography>
-                <Grid container spacing={3} sx={{marginTop: '50px', marginRight: 'auto', marginLeft: 'auto', width: '80vw'}}>
+                <Grid container spacing={3} sx={{marginTop: '50px', marginRight: 'auto', marginLeft: 'auto', width: '85vw'}}>
                     {browseData.map((browse: any, index: any) => (
                     <Grid item key={index} xs={12} sm={6} md={3}>
                         <Card
                         sx={{
-                            height: "400px",
+                            height: "425px",
                             width: "250px", 
                             display: "flex",
                             flexDirection: "column",
@@ -136,7 +170,7 @@ export const Watchlist = () => {
                             <Button
                                 size="large"
                                 variant='text'
-                                onClick={()=> {setCurrentData(browse); setDetailsOpen(true)}}
+                                onClick={()=> {setCurrentData(browse); handleDetailsOpen()}}
                                 sx={{left: '0px', color: 'white', marginLeft: '0px', textAlign: 'left'}}
                                 >
                                 View Details
@@ -151,38 +185,125 @@ export const Watchlist = () => {
                     </Grid>
                     ))}
                 </Grid>
+                {/* Details Dialog Box */}
                 <Dialog
                     open={detailsOpen} 
+                    scroll='body'
+                    maxWidth='xl'
                     onClose={handleDetailsClose} 
                     aria-labelledby='form-dialog-title'
                     sx = {{
                         marginRight: 'auto',
                         marginLeft: 'auto',
-                        marginTop: '30vh',
-                        height: {xs: '1000px', sm: "400px"},
-                        width: {xs: '400px', sm: "800px"}, 
-                        display: "flex",
-                        flexDirection: {xs: 'column', sm: "row"},
-                        backgroundColor: "#1B2929",
-                        borderRadius: '10px'
+                        marginTop: '25vh',
+                        height: {xs: '1000px', sm: "500px"},
+                        width: {xs: '400px', sm: "1000px"}, 
+                        borderRadius: '10px',
+                        padding: '20px'
                     }}>
-                    <Stack sx={{direction: 'column', backgroundColor: 'initial'}}>
-                            <CardMedia
-                            component="img"
-                            sx={{
-                            pt: "0",
-                            height: "225px",
-                            width: '300px'
-                            }}
-                            image={currentData.poster_image}
-                            alt={currentData.title}
-                        />
-                    </Stack>
-                    <Stack>
-                        <Typography variant='h4' sx={{backgroundColor: 'initial'}}>{currentData.title}</Typography>
-                        <Typography variant='h6' sx={{backgroundColor: 'initial'}}>{currentData.summary}</Typography>
-
-                    </Stack>
+                    <DialogContent sx={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
+                            <Stack sx={{marginBottom: '10px'}}>
+                                    <CardMedia
+                                    component="img"
+                                    sx={{
+                                    pt: "0",
+                                    height: "475px",
+                                    width: '325px'
+                                    }}
+                                    image={currentData.poster_image}
+                                    alt={currentData.title}
+                                />
+                            </Stack>
+                            <Stack sx={{width: '60%'}}>
+                                <Typography variant='h4' sx={{backgroundColor: 'initial'}}>{currentData.title}</Typography>
+                                <Typography variant='h6' sx={{backgroundColor: 'initial'}}>{currentData.summary}</Typography>
+                                <br />
+                                <Typography variant='h6'>Genre:  { currentData.genre}</Typography>
+                                <br />
+                                <Typography variant='h6'>Available Streaming:  { currentData.streaming || ' N/A'} </Typography>
+                                <Typography variant='h6'>Cast: </Typography>
+                                <Grid container spacing={1} sx={{marginTop: '30px', marginBottom: '30px', marginRight: 'auto', marginLeft: 'auto'}}>
+                                    {castData.map((cast: any, index: any) => (
+                                    <Grid item key={index} xs={12} sm={3} md={2} >
+                                        <Stack direction='column' justifyContent='center' sx={{textAlign: 'left'}}>
+                                        <Avatar sx={{width: 75, height: 75}}><img src={cast.cast_image} style={{width: '100%', marginTop: '15px'}}/></Avatar>
+                                        <Typography variant='body2' sx={{color: 'black'}}>{cast.full_name}</Typography>
+                                        </Stack>
+                                    </Grid>
+                                    ))}
+                                </Grid>
+                            </Stack>
+                        </DialogContent>
+                        <Divider />
+                        <DialogContent>
+                        <Stack>
+                            <br />
+                            <Stack direction = 'row' justifyContent='start' alignItems='center'>
+                                <Typography variant="h6" component="h2">
+                                Have Watched?
+                                </Typography>
+                                <Typography variant="h6" component="h2" sx={{marginLeft: '20px'}}>
+                                {currentData.have_watched == false? <ThumbDownIcon fontSize='medium' sx={{color: 'red'}}/> : <ThumbUpIcon fontSize='medium' sx={{color: 'green'}} />} 
+                                </Typography>
+                                <Button
+                                    size='large'
+                                    variant='text'
+                                    color='secondary'
+                                    sx = {{top: '0px', marginLeft: '7px'}}
+                                    onClick = {updateWatchlist}>
+                                        Update
+                                    </Button>
+                            </Stack>
+                            <Stack direction = 'row' justifyContent='start' alignItems = 'center'>
+                                <Typography variant="h6" component="h2">
+                                Review Score: 
+                                </Typography>
+                                <Typography variant="h6" component="h2" sx={{marginLeft: '25px'}}>
+                                {currentData.review_score || 'N/A'} 
+                                </Typography>
+                                <Button
+                                    size='large'
+                                    variant='text'
+                                    color='secondary'
+                                    sx = {{top: '0px', marginLeft: '5px'}}
+                                    onClick = {()=>{setReviewOpen(true); setReviewType('reviewScore')}}>
+                                        Update
+                                </Button>
+                            </Stack>
+                            <Stack direction = 'row' justifyContent='start' alignItems = 'center'>
+                                <Typography variant="h6" component="h2">
+                                Review: 
+                                </Typography>
+                                <Typography variant="h6" component="h2" sx={{marginLeft: '70px'}}>
+                                {currentData.review || 'N/A'} 
+                                </Typography>
+                                <Button
+                                    size='large'
+                                    variant='text'
+                                    color='secondary'
+                                    sx = {{top: '0px', marginLeft: '5px'}}
+                                    onClick = {() => {setReviewOpen(true); setReviewType('review')}}>
+                                        Update
+                                </Button>
+                            </Stack>
+                        </Stack>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button
+                            size="small"
+                            variant='contained'
+                            color="error"
+                            onClick={() => deleteFromWatchlist(currentData.watch_id)}
+                            >
+                            Delete
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+                <Dialog open={reviewOpen} onClose={handleReviewClose}>
+                    <DialogContent>
+                        <DialogContentText>Update your Review of {currentData.title}</DialogContentText>
+                        {reviewType === 'review'? <Review id={currentData.watch_id} /> : <ReviewScore id={currentData.watch_id}/>}
+                    </DialogContent>
                 </Dialog>
             </Main>
         </Root>

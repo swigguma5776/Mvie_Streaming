@@ -20,6 +20,21 @@ export const serverCalls = {
 
         return await response.json()
     },
+    getCast: async (id: string) => {
+        const response = await fetch(`${serverCalls.baseUrl}/cast/${id}`,{
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-access-token': `Bearer ${serverCalls.token}`
+            }
+        });
+
+        if (!response.ok){
+            throw new Error('Failed to fetch data from server')
+        }
+
+        return await response.json()
+    },
     createShow: async(data: any = {}) => {
         const response = await fetch(`${serverCalls.baseUrl}/show`,{
             method: 'POST',
@@ -44,6 +59,37 @@ export const serverCalls = {
                 'x-access-token': `Bearer ${serverCalls.token}`
             },
             body: JSON.stringify(data)
+        });
+
+        if(!response.ok){
+            throw new Error('Failed to Create new data on server')
+        }
+
+        return await response.json()
+    },
+    updateShow: async(data: any = {}, id: string) => {
+        const response = await fetch(`${serverCalls.baseUrl}/show/${id}`,{
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-access-token': `Bearer ${serverCalls.token}`
+            },
+            body: JSON.stringify(data)
+        });
+
+        if(!response.ok){
+            throw new Error('Failed to Create new data on server')
+        }
+
+        return await response.json()
+    },
+    deleteShow: async(id: string) => {
+        const response = await fetch(`${serverCalls.baseUrl}/show/${id}`,{
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-access-token': `Bearer ${serverCalls.token}`
+            }
         });
 
         if(!response.ok){
@@ -91,7 +137,7 @@ export const getMvieData = {
             }
         }
         console.log(finalGenres)
-        return finalGenres
+        return finalGenres.slice(0, -2)
     },
     getStreaming: async(movieId: string, type: string) => {
         let finalStreaming = ""
@@ -99,21 +145,18 @@ export const getMvieData = {
         const results = await response.json()
         console.log(results)
 
-        if (results!){
-            return ""
-        }
-        const data = await results.results.US.rent
-
+        const data = await results.results.US.rent || await results.results.US.flatrate
+        console.log(data)
         for (let rent of data){
             finalStreaming += rent.provider_name + ", "
         }
         console.log(finalStreaming)
-        return finalStreaming
+        return finalStreaming.slice(0, -2)
     },
     getCast: async(movieId: string, type: string) => {
         const response = await fetch(`${getMvieData.baseUrl}${type}/${movieId}/credits?api_key=${getMvieData.apiKey}&language=en-US`)
         const results = await response.json()
-        return results.cast.slice(0,10)
+        return results.cast.slice(0,6)
     }
 }
 
