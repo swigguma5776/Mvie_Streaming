@@ -41,7 +41,9 @@ const Root = styled("div")({
     backgroundSize: "cover",
     backgroundRepeat: "no-repeat",
     backgroundPosition: "center",
-    position: "absolute",
+    backgroundAttachment: 'fixed',
+    paddingTop: '100px',
+    paddingBottom: '50px'
   });
 
 //   const useStyles = makeStyles({
@@ -100,14 +102,14 @@ export const Watchlist = () => {
 
     return(
         <Root>
-            <HomeNavBar />
             <Main>
+            <HomeNavBar />
                 <Typography
                 variant = 'h4'
-                sx = {{marginTop: '100px', marginLeft: '15vh', color: "white"}}>
+                sx = {{ marginLeft: '15vh', color: "white"}}>
                 Your Watchlist
                 </Typography>
-                <Grid container spacing={3} sx={{marginTop: '50px', marginRight: 'auto', marginLeft: 'auto', width: '85vw'}}>
+                <Grid container spacing={3} sx={{marginTop: '25px', marginRight: 'auto', marginLeft: 'auto', width: '85vw'}}>
                     {browseData.map((browse: any, index: any) => (
                     <Grid item key={index} xs={12} sm={6} md={3}>
                         <Card

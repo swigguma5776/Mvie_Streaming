@@ -112,7 +112,7 @@ export const getMvieData = {
             const res = await fetch(`${getMvieData.baseUrl}/search/movie?api_key=${getMvieData.apiKey}&language=en-US&query=${title}&page=1&include_adult=false`)
             const data = await res.json()
             console.log(data.results)
-            return data.results.slice(0,4)
+            return data.results
 
 
         } else {
@@ -120,7 +120,7 @@ export const getMvieData = {
             const res = await fetch(`${getMvieData.baseUrl}search/tv?api_key=${getMvieData.apiKey}&language=en-US&query=${title}&page=1&include_adult=false`)
             const data = await res.json()
             console.log(data.results)
-            return data.results.slice(0,4)
+            return data.results
         }
     },
     getGenre: async(genres:any = [], type: string) => {

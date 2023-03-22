@@ -41,7 +41,9 @@ const Root = styled("div")({
     backgroundSize: "cover",
     backgroundRepeat: "no-repeat",
     backgroundPosition: "center",
-    position: "absolute",
+    backgroundAttachment: 'fixed',
+    paddingTop: '50px',
+    paddingBottom: '600px'
   });
 
   interface BrowseForm {
@@ -104,8 +106,8 @@ export const Browse = (props:BrowseForm) => {
 
     return(
         <Root>
-            <HomeNavBar />
             <Main>
+            <HomeNavBar />
                 <Stack
                 width='550px'
                 height='75px'
@@ -136,7 +138,7 @@ export const Browse = (props:BrowseForm) => {
             {/* Search Results! */}
             <Grid container spacing={3} sx={{marginTop: '50px', marginRight: 'auto', marginLeft: 'auto', width: '80vw'}}>
             {browseData.map((browse: any, index: any) => (
-              <Grid item key={index} xs={12} sm={6} md={3}>
+              <Grid item key={index} sm={12} md={3}>
                 <Card
                   sx={{
                     height: "475px",
