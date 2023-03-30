@@ -12,14 +12,13 @@ import MenuItem from "@mui/material/MenuItem";
 import FastForwardIcon from '@mui/icons-material/FastForward';
 import { useNavigate } from "react-router-dom";
 import { Stack } from "@mui/material";
-// import { getAuth } from "firebase/auth"; // ** new ** add this for authentication functionality
-// import { signOut } from "firebase/auth";
+import { getAuth } from "firebase/auth"; // ** new ** add this for authentication functionality
+import { signOut } from "firebase/auth";
 import { useState } from "react";
 
 export const HomeNavBar = () => {
-//   const auth = getAuth();
-//   const myAuth = localStorage.getItem("auth");
-  const myAuth = 'false';
+  const auth = getAuth();
+  const myAuth = localStorage.getItem("auth");
   const navigate = useNavigate();
 
   let links = [
@@ -33,7 +32,7 @@ export const HomeNavBar = () => {
     },
     {
       text: "The HUB",
-      onClick: () => navigate("#"), // will be '/TheHub' in future
+      onClick: () => navigate("/hub"), // will be '/TheHub' in future
     },
   ];
 
@@ -50,20 +49,18 @@ export const HomeNavBar = () => {
     if (myAuth == 'false'){
         navigate('/signin') // will be '/SignIn' in future
     } else {
-        // signUsOut()
+        signUsOut()
     }
   }
 
 
-//   const signUsOut = async () => {
-//       await signOut(auth);
-//       localStorage.setItem("auth", "false");
-//       localStorage.setItem("token", "");
-//       setNavlinks(links);
-//       navigate("/");
-//       window.location.reload(); 
+  const signUsOut = async () => {
+      await signOut(auth);
+      localStorage.setItem("auth", "false");
+      localStorage.setItem("token", "");
+      navigate("/");
       
-//     };
+    };
 
 
 

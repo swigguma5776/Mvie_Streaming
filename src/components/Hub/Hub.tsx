@@ -8,7 +8,6 @@ import { Button,
     DialogActions,
     DialogContent, 
     DialogContentText,
-    DialogTitle, 
     Avatar } from '@mui/material'; 
 import { styled } from '@mui/system'; 
 import Card from "@mui/material/Card";
@@ -17,16 +16,20 @@ import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
 import Grid from "@mui/material/Grid";
 import FastForwardIcon from '@mui/icons-material/FastForward';
+import IconButton from "@mui/material/IconButton";
+import Menu from "@mui/material/Menu";
+import MenuIcon from "@mui/icons-material/Menu";
+import MenuItem from "@mui/material/MenuItem";
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import ThumbDownIcon from '@mui/icons-material/ThumbDown';
-// import { makeStyles } from '@material-ui/styles';
+
 // Internal Imports
 import background_image from '../../assets/images/baby_yoda_flip.jpeg'; 
 import { HomeNavBar } from '../sharedComponents/NavBar'; 
-import { useGetData } from '../../custom-hooks';
+import { useGetHubData } from '../../custom-hooks';
 import { useNavigate } from 'react-router-dom';
 import { serverCalls } from '../../api';
-import { Review, ReviewScore } from '../Forms';
+import { Review, ReviewScore, CreateHub } from '../Forms';
 
 
 const Root = styled("div")({
@@ -53,15 +56,29 @@ const Root = styled("div")({
 
 
 
-export const Watchlist = () => {
-    let { browseData, getData} = useGetData(); 
-    let [currentData, setCurrentData] = useState<any>({})
-    let [castData, setCastData] = useState<any>([])
-    const [detailsOpen, setDetailsOpen] = useState(false);
-    const [reviewOpen, setReviewOpen] = useState(false);
-    const [reviewType, setReviewType] = useState<string>()
+export const Hub = () => {
+    let { userHubData, getData} = useGetHubData(); 
+    let [userHub, setUserHub ] = useState<any>({});
+    let [hubData, setHubData ] = useState<any>([]); 
+    let [currentData, setCurrentData] = useState<any>({});
+    let [castData, setCastData] = useState<any>([]);
+    let [detailsOpen, setDetailsOpen] = useState(false);
+    let [reviewOpen, setReviewOpen] = useState(false);
+    let [hubOpen, setHubOpen] = useState(false);
+    let [reviewType, setReviewType] = useState<string>();
+    const navigate = useNavigate();
 
-    const navigate = useNavigate()
+        //copied form MUI template
+    const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
+        null
+    );
+    const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
+        setAnchorElNav(event.currentTarget);
+    };
+    const handleCloseNavMenu = () => {
+        setAnchorElNav(null);
+    };
+
 
     const chooseColor = (type: string) => {
         return (type === 'movie') ? 'orange' : 'purple'
@@ -69,7 +86,7 @@ export const Watchlist = () => {
 
     const handleDetailsOpen = async () => {
         setCastData(await serverCalls.getCast(currentData.watch_id))
-        setDetailsOpen(true)
+        setDetailsOpen(true);
       };
 
     const handleDetailsClose = () => {
@@ -78,6 +95,10 @@ export const Watchlist = () => {
 
     const handleReviewClose = () => {
         setReviewOpen(false);
+      };
+
+    const handleHubClose = () => {
+        setHubOpen(false);
       };
 
 
@@ -103,13 +124,58 @@ export const Watchlist = () => {
         <Root>
             <Main>
             <HomeNavBar />
-                <Typography
-                variant = 'h4'
-                sx = {{ marginLeft: '15vh', color: "white"}}>
-                Your Watchlist
-                </Typography>
+                <Stack direction = 'row' alignItems = 'center'>
+                    <Typography
+                    variant = 'h4'
+                    sx = {{ marginLeft: '15vh', color: "white"}}>
+                    View Your Hubs 
+                    </Typography>
+                    <Box >
+                        <IconButton
+                        size="large"
+                        aria-label="account of current user"
+                        aria-controls="menu-appbar"
+                        aria-haspopup="true"
+                        onClick={handleOpenNavMenu}
+                        color="inherit"
+                        >
+                        <MenuIcon sx={{color: 'white', marginTop: '5px'}}/>
+                        </IconButton>
+                        <Menu
+                        id="menu-appbar"
+                        anchorEl={anchorElNav}
+                        anchorOrigin={{
+                            vertical: "bottom",
+                            horizontal: "right",
+                        }}
+                        keepMounted
+                        transformOrigin={{
+                            vertical: "top",
+                            horizontal: "right",
+                        }}
+                        open={Boolean(anchorElNav)}
+                        onClose={handleCloseNavMenu}
+                        sx={{display: { xs: "block", md: "none" }}}
+                        >
+                        {userHubData.map((item: any, index: any) => (
+                            <MenuItem key={index} onClick={()=> navigate('#')}>
+                            <Typography textAlign="right" color='black'>{item.text}</Typography>
+                            </MenuItem>
+                        ))}
+                        </Menu>
+                    </Box>
+                    <Button
+                            size="medium"
+                            variant='contained'
+                            color="secondary"
+                            sx={{marginLeft: '50px'}}
+                            onClick = {()=> setHubOpen(true)}
+                            >
+                            Create New Hub
+                        </Button>
+                </Stack>
                 <Grid container spacing={3} sx={{marginTop: '25px', marginRight: 'auto', marginLeft: 'auto', width: '85vw'}}>
-                    {browseData.map((browse: any, index: any) => (
+                    {hubData.map((browse: any, index: any) => (
                     <Grid item key={index} xs={12} sm={6} md={3}>
                         <Card
                         sx={{
@@ -292,14 +358,6 @@ export const Watchlist = () => {
                         <Button
                             size="small"
                             variant='contained'
-                            color="secondary"
-        
-                            >
-                            Add to Hub
-                        </Button>
-                        <Button
-                            size="small"
-                            variant='contained'
                             color="error"
                             onClick={() => deleteFromWatchlist(currentData.watch_id)}
                             >
@@ -311,6 +369,12 @@ export const Watchlist = () => {
                     <DialogContent>
                         <DialogContentText>Update your Review of {currentData.title}</DialogContentText>
                         {reviewType === 'review'? <Review id={currentData.watch_id} /> : <ReviewScore id={currentData.watch_id}/>}
+                    </DialogContent>
+                </Dialog>
+                <Dialog open={hubOpen} onClose={handleHubClose}>
+                    <DialogContent>
+                        <DialogContentText>Create a New Hub!</DialogContentText>
+                        <CreateHub />
                     </DialogContent>
                 </Dialog>
             </Main>

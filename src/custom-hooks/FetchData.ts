@@ -16,3 +16,20 @@ export const useGetData = () => {
 
     return {browseData, getData:handleDataFetch}
 }
+
+export const useGetHubData = () => {
+    const [userHubData, setData] = useState<any>([])
+
+    async function handleDataFetch(){
+        const result = await serverCalls.getUserHub()
+        console.log(result)
+        setData(result)
+    }
+
+    useEffect( () => {
+        handleDataFetch()
+    }, [])
+
+    return {userHubData, getData:handleDataFetch}
+}
+

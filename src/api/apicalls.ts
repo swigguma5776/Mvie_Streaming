@@ -3,9 +3,10 @@
 
 
 export const serverCalls = {
-    token: 'test',
+    token: localStorage.getItem('token'),
     baseUrl: 'https://mvie-streaming-backend.glitch.me/api',
     getShow: async () => {
+        console.log(serverCalls.token)
         const response = await fetch(`${serverCalls.baseUrl}/show`,{
             method: 'GET',
             headers: {
@@ -22,6 +23,21 @@ export const serverCalls = {
     },
     getCast: async (id: string) => {
         const response = await fetch(`${serverCalls.baseUrl}/cast/${id}`,{
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-access-token': `Bearer ${serverCalls.token}`
+            }
+        });
+
+        if (!response.ok){
+            throw new Error('Failed to fetch data from server')
+        }
+
+        return await response.json()
+    },
+    getUserHub: async () => {
+        const response = await fetch(`${serverCalls.baseUrl}/userhub`,{
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -53,6 +69,22 @@ export const serverCalls = {
     },
     createCast: async(data: any = {}) => {
         const response = await fetch(`${serverCalls.baseUrl}/cast`,{
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-access-token': `Bearer ${serverCalls.token}`
+            },
+            body: JSON.stringify(data)
+        });
+
+        if(!response.ok){
+            throw new Error('Failed to Create new data on server')
+        }
+
+        return await response.json()
+    },
+    createUserHub: async(data: any = {}) => {
+        const response = await fetch(`${serverCalls.baseUrl}/userhub`,{
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
