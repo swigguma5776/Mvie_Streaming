@@ -181,6 +181,11 @@ export const Hub = () => {
                             Create New Hub
                         </Button>
                 </Stack>
+                <Typography
+                variant='h4'
+                sx = {{ marginLeft: '15vh', color: "white"}}>
+                    Current Hub: {localStorage.getItem('hubname')}
+                </Typography>
                 <Grid container spacing={3} sx={{marginTop: '25px', marginRight: 'auto', marginLeft: 'auto', width: '85vw'}}>
                     {hubData.map((browse: any, index: any) => (
                     <Grid item key={index} xs={12} sm={6} md={3}>

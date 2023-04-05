@@ -206,15 +206,18 @@ export const getMvieData = {
         let finalStreaming = ""
         const response = await fetch(`${getMvieData.baseUrl}${type}/${movieId}/watch/providers?api_key=${getMvieData.apiKey}`)
         const results = await response.json()
-        console.log(results)
-
-        const data = await results.results.US.rent || await results.results.US.flatrate
-        console.log(data)
-        for (let rent of data){
-            finalStreaming += rent.provider_name + ", "
+        console.log(results.length)
+        if (results.length !== undefined){
+            console.log('we here')
+            const data = await results.results.US.rent || await results.results.US.flatrate 
+            console.log(data)
+            for (let rent of data){
+                finalStreaming += rent.provider_name + ", "
+            }
+            console.log(finalStreaming)
+            return finalStreaming.slice(0, -2)
         }
-        console.log(finalStreaming)
-        return finalStreaming.slice(0, -2)
+        return finalStreaming
     },
     getCast: async(movieId: string, type: string) => {
         const response = await fetch(`${getMvieData.baseUrl}${type}/${movieId}/credits?api_key=${getMvieData.apiKey}&language=en-US`)
