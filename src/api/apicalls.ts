@@ -51,6 +51,21 @@ export const serverCalls = {
 
         return await response.json()
     },
+    getHub: async (name:any) => {
+        const response = await fetch(`${serverCalls.baseUrl}/hub/${name}`,{
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-access-token': `Bearer ${serverCalls.token}`
+            }
+        });
+
+        if (!response.ok){
+            throw new Error('Failed to fetch data from server')
+        }
+
+        return await response.json()
+    },
     createShow: async(data: any = {}) => {
         const response = await fetch(`${serverCalls.baseUrl}/show`,{
             method: 'POST',
@@ -85,6 +100,22 @@ export const serverCalls = {
     },
     createUserHub: async(data: any = {}) => {
         const response = await fetch(`${serverCalls.baseUrl}/userhub`,{
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-access-token': `Bearer ${serverCalls.token}`
+            },
+            body: JSON.stringify(data)
+        });
+
+        if(!response.ok){
+            throw new Error('Failed to Create new data on server')
+        }
+
+        return await response.json()
+    },
+    createHub: async(data: any = {}, name: string) => {
+        const response = await fetch(`${serverCalls.baseUrl}/hub/${name}`,{
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

@@ -1,23 +1,34 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { Button, Typography } from '@mui/material';
+import { Button, 
+    Typography,
+    Stack,
+    Box } from '@mui/material';
 import { InputText, InputPassword } from '../sharedComponents/InputFields';
 import { useNavigate } from 'react-router-dom'; 
+import IconButton from "@mui/material/IconButton";
+import Menu from "@mui/material/Menu";
+import MenuIcon from "@mui/icons-material/Menu";
+import MenuItem from "@mui/material/MenuItem";
 import { 
     onAuthStateChanged,
     getAuth, 
-    GoogleAuthProvider, 
     signOut, 
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword, } from 'firebase/auth'; 
 import { serverCalls } from '../../api';
+import { useGetUserHubData } from '../../custom-hooks';
 
 
-interface FormProps {
-    id: string
+interface ReviewProps {
+    id: string ,
 }
 
-export const ReviewScore = (props: FormProps) => {
+interface HubProps {
+    hubdata: object ,
+}
+
+export const ReviewScore = (props: ReviewProps) => {
     const  {register, handleSubmit} = useForm({})
 
     const onSubmit = async (data:any, event: any) => {
@@ -39,7 +50,7 @@ export const ReviewScore = (props: FormProps) => {
     )
 }
 
-export const Review = (props: FormProps) => {
+export const Review = (props: ReviewProps) => {
     const  {register, handleSubmit} = useForm({})
 
     const onSubmit = async (data:any, event: any) => {
@@ -80,6 +91,72 @@ export const CreateHub = () => {
                 <Button type='submit'>Submit</Button>
             </form>
         </div>
+    )
+}
+
+export const AddToHub = (props:HubProps) => {
+    // const  {register, handleSubmit} = useForm({})
+    let { userHubData, getUserData} = useGetUserHubData(); 
+
+    //copied form MUI template
+    const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
+        null
+    );
+    const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
+        setAnchorElNav(event.currentTarget);
+    };
+    const handleCloseNavMenu = () => {
+        setAnchorElNav(null);
+    };
+
+    const onSubmit = async (data:any) => {
+        console.log(data)
+        console.log(props.hubdata)
+        await serverCalls.createHub(props.hubdata, data.hub_name)
+        window.location.reload()
+    }
+
+    return(
+        <Stack direction = 'row' alignItems = 'center'>
+        <Typography
+        variant = 'h6'>
+        Select Which Hub to Add to
+        </Typography>
+        <Box >
+            <IconButton
+            size="large"
+            aria-label="account of current user"
+            aria-controls="menu-appbar"
+            aria-haspopup="true"
+            onClick={handleOpenNavMenu}
+            color="inherit"
+            >
+            <MenuIcon sx={{ marginTop: '5px'}}/>
+            </IconButton>
+            <Menu
+            id="menu-appbar"
+            anchorEl={anchorElNav}
+            anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "right",
+            }}
+            keepMounted
+            transformOrigin={{
+                vertical: "top",
+                horizontal: "right",
+            }}
+            open={Boolean(anchorElNav)}
+            onClose={handleCloseNavMenu}
+            sx={{display:"block"}}
+            >
+            {userHubData.map((item: any, index: any) => (
+                <MenuItem key={index} onClick={()=> onSubmit(item)}>
+                <Typography textAlign="right" color='black'>{item.hub_name}</Typography>
+                </MenuItem>
+            ))}
+            </Menu>
+        </Box>
+        </Stack>
     )
 }
 

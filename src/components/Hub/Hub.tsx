@@ -26,7 +26,7 @@ import ThumbDownIcon from '@mui/icons-material/ThumbDown';
 // Internal Imports
 import background_image from '../../assets/images/baby_yoda_flip.jpeg'; 
 import { HomeNavBar } from '../sharedComponents/NavBar'; 
-import { useGetHubData } from '../../custom-hooks';
+import { useGetUserHubData, useGetHubData } from '../../custom-hooks';
 import { useNavigate } from 'react-router-dom';
 import { serverCalls } from '../../api';
 import { Review, ReviewScore, CreateHub } from '../Forms';
@@ -57,9 +57,9 @@ const Root = styled("div")({
 
 
 export const Hub = () => {
-    let { userHubData, getData} = useGetHubData(); 
+    let { userHubData, getUserData} = useGetUserHubData(); 
+    let {hubData, getHubData } = useGetHubData();
     let [userHub, setUserHub ] = useState<any>({});
-    let [hubData, setHubData ] = useState<any>([]); 
     let [currentData, setCurrentData] = useState<any>({});
     let [castData, setCastData] = useState<any>([]);
     let [detailsOpen, setDetailsOpen] = useState(false);
@@ -67,6 +67,8 @@ export const Hub = () => {
     let [hubOpen, setHubOpen] = useState(false);
     let [reviewType, setReviewType] = useState<string>();
     const navigate = useNavigate();
+
+    console.log(userHubData)
 
         //copied form MUI template
     const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
@@ -103,6 +105,11 @@ export const Hub = () => {
 
 
     console.log(currentData)
+
+    const getHub = async (name: string) => {
+        localStorage.setItem('hubname', name)
+        window.location.reload()
+    }
 
     const deleteFromWatchlist = async (id: string) => {
         await serverCalls.deleteShow(id)
@@ -155,11 +162,11 @@ export const Hub = () => {
                         }}
                         open={Boolean(anchorElNav)}
                         onClose={handleCloseNavMenu}
-                        sx={{display: { xs: "block", md: "none" }}}
+                        sx={{display:"block"}}
                         >
                         {userHubData.map((item: any, index: any) => (
-                            <MenuItem key={index} onClick={()=> navigate('#')}>
-                            <Typography textAlign="right" color='black'>{item.text}</Typography>
+                            <MenuItem key={index} onClick={()=> getHub(item.hub_name)}>
+                            <Typography textAlign="right" color='black'>{item.hub_name}</Typography>
                             </MenuItem>
                         ))}
                         </Menu>

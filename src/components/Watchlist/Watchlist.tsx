@@ -26,7 +26,7 @@ import { HomeNavBar } from '../sharedComponents/NavBar';
 import { useGetData } from '../../custom-hooks';
 import { useNavigate } from 'react-router-dom';
 import { serverCalls } from '../../api';
-import { Review, ReviewScore } from '../Forms';
+import { AddToHub, Review, ReviewScore } from '../Forms';
 
 
 const Root = styled("div")({
@@ -59,6 +59,7 @@ export const Watchlist = () => {
     let [castData, setCastData] = useState<any>([])
     const [detailsOpen, setDetailsOpen] = useState(false);
     const [reviewOpen, setReviewOpen] = useState(false);
+    const [hubOpen, setHubOpen] = useState(false);
     const [reviewType, setReviewType] = useState<string>()
 
     const navigate = useNavigate()
@@ -80,8 +81,12 @@ export const Watchlist = () => {
         setReviewOpen(false);
       };
 
+    const handleHubClose = () => {
+        setHubOpen(false);
+      };
 
     console.log(currentData)
+    console.log(castData)
 
     const deleteFromWatchlist = async (id: string) => {
         await serverCalls.deleteShow(id)
@@ -96,7 +101,6 @@ export const Watchlist = () => {
         window.location.reload()
     }
 
-    console.log(castData)
 
     if (localStorage.getItem('auth') == 'true'){
     return(
@@ -293,7 +297,7 @@ export const Watchlist = () => {
                             size="small"
                             variant='contained'
                             color="secondary"
-        
+                            onClick = {() => {setHubOpen(true)}}
                             >
                             Add to Hub
                         </Button>
@@ -311,6 +315,12 @@ export const Watchlist = () => {
                     <DialogContent>
                         <DialogContentText>Update your Review of {currentData.title}</DialogContentText>
                         {reviewType === 'review'? <Review id={currentData.watch_id} /> : <ReviewScore id={currentData.watch_id}/>}
+                    </DialogContent>
+                </Dialog>
+                <Dialog open={hubOpen} onClose={handleHubClose}>
+                    <DialogContent>
+                        <DialogContentText>Your Hubs</DialogContentText>
+                        <AddToHub hubdata={currentData} /> 
                     </DialogContent>
                 </Dialog>
             </Main>
