@@ -19,6 +19,9 @@ export const theme = createTheme({
       main: "#aedcc0",
       light: "#e7f9ee",
     },
+    success: {
+      main: "#fc9f8d"
+    }
   },
   typography: {
     button: {

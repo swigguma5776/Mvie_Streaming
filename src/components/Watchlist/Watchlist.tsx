@@ -314,7 +314,7 @@ export const Watchlist = () => {
                 <Dialog open={reviewOpen} onClose={handleReviewClose}>
                     <DialogContent>
                         <DialogContentText>Update your Review of {currentData.title}</DialogContentText>
-                        {reviewType === 'review'? <Review id={currentData.watch_id} /> : <ReviewScore id={currentData.watch_id}/>}
+                        {reviewType === 'review'? <Review id={currentData.watch_id} type={'watchlist'} /> : <ReviewScore id={currentData.watch_id} type={'watchlist'}/>}
                     </DialogContent>
                 </Dialog>
                 <Dialog open={hubOpen} onClose={handleHubClose}>

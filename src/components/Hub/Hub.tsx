@@ -66,6 +66,8 @@ export const Hub = () => {
     let [reviewOpen, setReviewOpen] = useState(false);
     let [hubOpen, setHubOpen] = useState(false);
     let [reviewType, setReviewType] = useState<string>();
+    let [reviewScore, setReviewScore] = useState<any>()
+    let [hubType, setHubType] = useState<string>();
     const navigate = useNavigate();
 
     console.log(userHubData)
@@ -104,26 +106,45 @@ export const Hub = () => {
       };
 
 
-    console.log(currentData)
+    const calculateReview = async () => {
 
+        if (currentData.review_score){
+            console.log('in the calculateReview')
+            let reviewScore = 0
+            for (let score of currentData.review_score.split(',')){
+                reviewScore += parseFloat(score)
+                }
+            reviewScore /= parseFloat(currentData.how_many_reviews)
+            console.log(reviewScore)
+            setReviewScore(reviewScore.toFixed(2))
+        }
+
+
+        // setReviewScore((Math.round(currentData.review_score.split(',')
+        // .map((score: string) => parseFloat(score)) / parseFloat(currentData.how_many_reviews)).toFixed(2)).toString())
+    }
+    
     const getHub = async (name: string) => {
         localStorage.setItem('hubname', name)
         window.location.reload()
     }
-
-    const deleteFromWatchlist = async (id: string) => {
-        await serverCalls.deleteShow(id)
+    
+    const deleteFromHub = async (id: string) => {
+        await serverCalls.deleteHub(id)
         window.location.reload()
     }
-
-    const updateWatchlist = async () => {
+    
+    const updateHub = async () => {
         let data
         currentData.have_watched == false ? data = {"haveWatched": true} : data = {"haveWatched": false}
-
+        
         await serverCalls.updateShow(data, currentData.watch_id)
         window.location.reload()
     }
-
+    
+    console.log(currentData.review_score)
+    console.log(currentData.how_many_reviews)
+    console.log(reviewScore)
     console.log(castData)
 
     if (localStorage.getItem('auth') == 'true'){
@@ -176,9 +197,18 @@ export const Hub = () => {
                             variant='contained'
                             color="secondary"
                             sx={{marginLeft: '50px'}}
-                            onClick = {()=> setHubOpen(true)}
+                            onClick = {()=> {setHubOpen(true); setHubType('create')}}
                             >
-                            Create New Hub
+                            Create Hub
+                        </Button>
+                    <Button
+                            size="medium"
+                            variant='contained'
+                            color="success"
+                            sx={{marginLeft: '25px'}}
+                            onClick = {()=> {setHubOpen(true); setHubType('find')}}
+                            >
+                            Find Hub
                         </Button>
                 </Stack>
                 <Typography
@@ -239,7 +269,7 @@ export const Hub = () => {
                                     Review Score
                                     </Typography>
                                     <Typography variant="h6" component="h2" sx={{color: 'white'}}>
-                                    {browse.review_score || 'N/A'} 
+                                    {reviewScore || 'N/A'} 
                                     </Typography>
                                 </Stack>
                             </Box>
@@ -249,7 +279,7 @@ export const Hub = () => {
                             <Button
                                 size="large"
                                 variant='text'
-                                onClick={()=> {setCurrentData(browse); handleDetailsOpen()}}
+                                onClick={()=> {setCurrentData(browse); handleDetailsOpen();calculateReview()}}
                                 sx={{left: '0px', color: 'white', marginLeft: '0px', textAlign: 'left'}}
                                 >
                                 View Details
@@ -328,7 +358,7 @@ export const Hub = () => {
                                     variant='text'
                                     color='secondary'
                                     sx = {{top: '0px', marginLeft: '7px'}}
-                                    onClick = {updateWatchlist}>
+                                    onClick = {updateHub}>
                                         Update
                                     </Button>
                             </Stack>
@@ -337,7 +367,7 @@ export const Hub = () => {
                                 Review Score: 
                                 </Typography>
                                 <Typography variant="h6" component="h2" sx={{marginLeft: '25px'}}>
-                                {currentData.review_score || 'N/A'} 
+                                { reviewScore || 'N/A'}
                                 </Typography>
                                 <Button
                                     size='large'
@@ -350,7 +380,7 @@ export const Hub = () => {
                             </Stack>
                             <Stack direction = 'row' justifyContent='start' alignItems = 'center'>
                                 <Typography variant="h6" component="h2">
-                                Review: 
+                                Reviews: 
                                 </Typography>
                                 <Typography variant="h6" component="h2" sx={{marginLeft: '70px'}}>
                                 {currentData.review || 'N/A'} 
@@ -371,7 +401,7 @@ export const Hub = () => {
                             size="small"
                             variant='contained'
                             color="error"
-                            onClick={() => deleteFromWatchlist(currentData.watch_id)}
+                            onClick={() => deleteFromHub(currentData.watch_id)}
                             >
                             Delete
                         </Button>
@@ -380,13 +410,15 @@ export const Hub = () => {
                 <Dialog open={reviewOpen} onClose={handleReviewClose}>
                     <DialogContent>
                         <DialogContentText>Update your Review of {currentData.title}</DialogContentText>
-                        {reviewType === 'review'? <Review id={currentData.watch_id} /> : <ReviewScore id={currentData.watch_id}/>}
+                        {reviewType === 'review'? <Review id={currentData.watch_id} type={'hub'} /> : <ReviewScore id={currentData.watch_id} type={'hub'}/>}
                     </DialogContent>
                 </Dialog>
                 <Dialog open={hubOpen} onClose={handleHubClose}>
                     <DialogContent>
-                        <DialogContentText>Create a New Hub!</DialogContentText>
-                        <CreateHub />
+                        <DialogContentText>
+                            {hubType === 'create'? "Create a New Hub!": "Join an Existing Hub!"}
+                        </DialogContentText>
+                        <CreateHub type={hubType}/>
                     </DialogContent>
                 </Dialog>
             </Main>

@@ -22,6 +22,7 @@ import { useGetUserHubData } from '../../custom-hooks';
 
 interface ReviewProps {
     id: string ,
+    type: string
 }
 
 interface HubProps {
@@ -33,8 +34,13 @@ export const ReviewScore = (props: ReviewProps) => {
 
     const onSubmit = async (data:any, event: any) => {
         let reviewData = {'haveWatched': null, 'review': null, 'reviewScore': data.reviewScore}
+        if (props.type == 'watchlist'){
             await serverCalls.updateShow(reviewData, props.id)
             window.location.reload()
+        } else {
+            await serverCalls.updateHub(reviewData, props.id)
+            window.location.reload()
+        }
     }
 
     return(
@@ -55,8 +61,14 @@ export const Review = (props: ReviewProps) => {
 
     const onSubmit = async (data:any, event: any) => {
         let reviewData = {'haveWatched': null,'review': data.review, 'reviewScore': null}
+        if (props.type == 'watchlist'){
+            console.log('watchlist review')
             await serverCalls.updateShow(reviewData, props.id)
             window.location.reload()
+        } else {
+            await serverCalls.updateHub(reviewData, props.id)
+            window.location.reload()
+        }
     }
 
     return(
@@ -72,13 +84,18 @@ export const Review = (props: ReviewProps) => {
     )
 }
 
-export const CreateHub = () => {
+export const CreateHub = (type:any) => {
     const  {register, handleSubmit} = useForm({})
 
     const onSubmit = async (data:any, event: any) => {
         console.log(data)
-        await serverCalls.createUserHub(data)
-        window.location.reload()
+        if (type == 'create'){
+            await serverCalls.createUserHub(data)
+            window.location.reload()
+        } else {
+            await serverCalls.findUserHub(data.hubName)
+            window.location.reload()
+        }
     }
 
     return(
@@ -86,7 +103,7 @@ export const CreateHub = () => {
             <form onSubmit = {handleSubmit(onSubmit)}>
                 <div>
                     <label htmlFor="hubname"></label>
-                    <InputText {...register('hubName')} name='hubName' placeholder='What is the name of your Hub?' />
+                    <InputText {...register('hubName')} name='hubName' placeholder='What is the Hub name?' />
                 </div>
                 <Button type='submit'>Submit</Button>
             </form>

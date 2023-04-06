@@ -114,6 +114,21 @@ export const serverCalls = {
 
         return await response.json()
     },
+    findUserHub: async(name: string) => {
+        const response = await fetch(`${serverCalls.baseUrl}/userhub/${name}`,{
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-access-token': `Bearer ${serverCalls.token}`
+            }
+        });
+
+        if(!response.ok){
+            throw new Error('Failed to Create new data on server')
+        }
+
+        return await response.json()
+    },
     createHub: async(data: any = {}, name: string) => {
         const response = await fetch(`${serverCalls.baseUrl}/hub/${name}`,{
             method: 'POST',
@@ -146,8 +161,39 @@ export const serverCalls = {
 
         return await response.json()
     },
+    updateHub: async(data: any = {}, id: string) => {
+        const response = await fetch(`${serverCalls.baseUrl}/hub/${id}`,{
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-access-token': `Bearer ${serverCalls.token}`
+            },
+            body: JSON.stringify(data)
+        });
+
+        if(!response.ok){
+            throw new Error('Failed to Create new data on server')
+        }
+
+        return await response.json()
+    },
     deleteShow: async(id: string) => {
         const response = await fetch(`${serverCalls.baseUrl}/show/${id}`,{
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-access-token': `Bearer ${serverCalls.token}`
+            }
+        });
+
+        if(!response.ok){
+            throw new Error('Failed to Create new data on server')
+        }
+
+        return await response.json()
+    },
+    deleteHub: async(id: string) => {
+        const response = await fetch(`${serverCalls.baseUrl}/hub/${id}`,{
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
