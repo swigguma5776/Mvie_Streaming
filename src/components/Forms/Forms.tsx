@@ -29,6 +29,10 @@ interface HubProps {
     hubdata: object ,
 }
 
+interface CreateProps {
+    type: string
+}
+
 export const ReviewScore = (props: ReviewProps) => {
     const  {register, handleSubmit} = useForm({})
 
@@ -84,12 +88,13 @@ export const Review = (props: ReviewProps) => {
     )
 }
 
-export const CreateHub = (type:any) => {
+export const CreateHub = (props: CreateProps) => {
     const  {register, handleSubmit} = useForm({})
 
     const onSubmit = async (data:any, event: any) => {
         console.log(data)
-        if (type == 'create'){
+        console.log(props.type)
+        if (props.type == 'create'){
             await serverCalls.createUserHub(data)
             window.location.reload()
         } else {
@@ -198,6 +203,7 @@ export const SignIn = () => {
             onAuthStateChanged(auth, (user) => {
               if (user) {
                 localStorage.setItem("token", user.uid);
+                localStorage.setItem("user", user.email || '');
               }
             });
             const user = userCredential.user;
@@ -243,6 +249,7 @@ export const SignUp = () => {
             onAuthStateChanged(auth, (user) => {
               if (user) {
                 localStorage.setItem("token", user.uid);
+                localStorage.setItem("user", user.email || '');
               }
             });
   

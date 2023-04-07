@@ -10,6 +10,7 @@ import Container from "@mui/material/Container";
 import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
 import FastForwardIcon from '@mui/icons-material/FastForward';
+import Face5Icon from '@mui/icons-material/Face5';
 import { useNavigate } from "react-router-dom";
 import { Stack } from "@mui/material";
 import { getAuth } from "firebase/auth"; // ** new ** add this for authentication functionality
@@ -58,6 +59,7 @@ export const HomeNavBar = () => {
       await signOut(auth);
       localStorage.setItem("auth", "false");
       localStorage.setItem("token", "");
+      localStorage.setItem("user", '');
       navigate("/");
       
     };
@@ -166,15 +168,21 @@ export const HomeNavBar = () => {
               </Button>
             ))}
           </Box>
-          <Button 
-            variant = 'outlined'
-            color = 'secondary'
-            size = 'large'
-            sx = {{  position: 'absolute', color: "white", right: '0px'}}
-            onClick = {signinButton}
-            >
-            {signInText}
-            </Button>
+          <Stack direction='row' justifyContent='space-between' alignItems='center' sx={{position: 'absolute', right:'0px', width: '250px'}}>
+            {localStorage.getItem('user')? <Face5Icon /> : null}
+            <Typography variant='body2' sx={{color: 'inherit'}}>
+              {localStorage.getItem('user')}
+            </Typography>
+            <Button 
+              variant = 'outlined'
+              color = 'secondary'
+              size = 'large'
+              sx = {{ color: "white", ml: '20px'}}
+              onClick = {signinButton}
+              >
+              {signInText}
+              </Button>
+            </Stack>
         </Toolbar>
       </Container>
     </AppBar>

@@ -52,6 +52,7 @@ const GoogleButton = (props:buttonProps) =>{
         if (user) {
             console.log(user.email);
             console.log(user.uid)
+            localStorage.setItem("user", user.email || '');
             localStorage.setItem("token", user.uid);
         }
         });

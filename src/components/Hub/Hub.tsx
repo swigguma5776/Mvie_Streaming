@@ -66,8 +66,7 @@ export const Hub = () => {
     let [reviewOpen, setReviewOpen] = useState(false);
     let [hubOpen, setHubOpen] = useState(false);
     let [reviewType, setReviewType] = useState<string>();
-    let [reviewScore, setReviewScore] = useState<any>()
-    let [hubType, setHubType] = useState<string>();
+    let [hubType, setHubType] = useState<string>('');
     const navigate = useNavigate();
 
     console.log(userHubData)
@@ -89,7 +88,7 @@ export const Hub = () => {
     }
 
     const handleDetailsOpen = async () => {
-        setCastData(await serverCalls.getCast(currentData.watch_id))
+        setCastData(await serverCalls.getCast(currentData.watch_id.slice(3)))
         setDetailsOpen(true);
       };
 
@@ -105,24 +104,6 @@ export const Hub = () => {
         setHubOpen(false);
       };
 
-
-    const calculateReview = async () => {
-
-        if (currentData.review_score){
-            console.log('in the calculateReview')
-            let reviewScore = 0
-            for (let score of currentData.review_score.split(',')){
-                reviewScore += parseFloat(score)
-                }
-            reviewScore /= parseFloat(currentData.how_many_reviews)
-            console.log(reviewScore)
-            setReviewScore(reviewScore.toFixed(2))
-        }
-
-
-        // setReviewScore((Math.round(currentData.review_score.split(',')
-        // .map((score: string) => parseFloat(score)) / parseFloat(currentData.how_many_reviews)).toFixed(2)).toString())
-    }
     
     const getHub = async (name: string) => {
         localStorage.setItem('hubname', name)
@@ -135,16 +116,13 @@ export const Hub = () => {
     }
     
     const updateHub = async () => {
-        let data
-        currentData.have_watched == false ? data = {"haveWatched": true} : data = {"haveWatched": false}
+        let data  = {"haveWatched": 'true'} 
         
-        await serverCalls.updateShow(data, currentData.watch_id)
+        await serverCalls.updateHub(data, currentData.watch_id)
         window.location.reload()
     }
     
-    console.log(currentData.review_score)
-    console.log(currentData.how_many_reviews)
-    console.log(reviewScore)
+
     console.log(castData)
 
     if (localStorage.getItem('auth') == 'true'){
@@ -260,16 +238,29 @@ export const Hub = () => {
                                     <Typography variant="h6" component="h2" sx={{color: 'white'}}>
                                     Have Watched?
                                     </Typography>
+                                    <Stack direction = 'row'>
                                     <Typography variant="h6" component="h2" sx={{color: 'white'}}>
-                                    {browse.have_watched == false? <ThumbDownIcon fontSize='medium' sx={{color: 'red'}}/> : <ThumbUpIcon fontSize='medium' sx={{color: 'green'}} />} 
+                                    {browse.have_watched ? browse.have_watched.split(", ").map((value: any) => {
+                                        if (value == 'true'){
+                                            return 1
+                                        } else return 0}).reduce((total: any,num: any) => total + num, 0): ''}
                                     </Typography>
+                                    <ThumbUpIcon fontSize='small' sx={{color: 'green', mr: '7px', ml: '5px'}}/> 
+                                    <Typography variant="h6" component="h2" sx={{color: 'white'}}>
+                                    {browse.have_watched? browse.have_watched.split(", ").map((value: any) => {
+                                        if (value == 'false'){
+                                            return 1
+                                        } else return 0}).reduce((total: any,num: any) => total + num, 0): 'N/A'}
+                                    </Typography>
+                                    <ThumbDownIcon fontSize='small' sx={{color: 'red', ml: '5px'}}/> 
+                                    </Stack>
                                 </Stack>
                                 <Stack direction = 'row' justifyContent='space-between'>
                                     <Typography variant="h6" component="h2" sx={{color: 'white'}}>
                                     Review Score
                                     </Typography>
                                     <Typography variant="h6" component="h2" sx={{color: 'white'}}>
-                                    {reviewScore || 'N/A'} 
+                                    {browse.total_review || 'N/A'} 
                                     </Typography>
                                 </Stack>
                             </Box>
@@ -279,7 +270,7 @@ export const Hub = () => {
                             <Button
                                 size="large"
                                 variant='text'
-                                onClick={()=> {setCurrentData(browse); handleDetailsOpen();calculateReview()}}
+                                onClick={()=> {setCurrentData(browse); handleDetailsOpen()}}
                                 sx={{left: '0px', color: 'white', marginLeft: '0px', textAlign: 'left'}}
                                 >
                                 View Details
@@ -350,24 +341,38 @@ export const Hub = () => {
                                 <Typography variant="h6" component="h2">
                                 Have Watched?
                                 </Typography>
-                                <Typography variant="h6" component="h2" sx={{marginLeft: '20px'}}>
-                                {currentData.have_watched == false? <ThumbDownIcon fontSize='medium' sx={{color: 'red'}}/> : <ThumbUpIcon fontSize='medium' sx={{color: 'green'}} />} 
-                                </Typography>
+                                <Stack direction = 'row'>
+                                    <Typography variant="h6" component="h2" sx={{ml: '23px'}}>
+                                    {currentData.have_watched? currentData.have_watched.split(", ").map((value: any) => {
+                                        if (value == 'true'){
+                                            return 1
+                                        } else return 0}).reduce((total: any,num: any) => total + num, 0) : ''}
+                                    </Typography>
+                                    <ThumbUpIcon fontSize='small' sx={{color: 'green', mr: '7px', ml: '5px'}}/> 
+                                    <Typography variant="h6" component="h2">
+                                    {currentData.have_watched ? currentData.have_watched.split(", ").map((value: any) => {
+                                        console.log(value)
+                                        if (value == 'false'){
+                                            return 1
+                                        } else return 0}).reduce((total: any,num: any) => total + num, 0) : 'N/A'}
+                                    </Typography>
+                                    <ThumbDownIcon fontSize='small' sx={{color: 'red', ml: '5px'}}/> 
+                                </Stack>
                                 <Button
                                     size='large'
                                     variant='text'
                                     color='secondary'
                                     sx = {{top: '0px', marginLeft: '7px'}}
                                     onClick = {updateHub}>
-                                        Update
+                                        Add Watched 
                                     </Button>
                             </Stack>
                             <Stack direction = 'row' justifyContent='start' alignItems = 'center'>
                                 <Typography variant="h6" component="h2">
                                 Review Score: 
                                 </Typography>
-                                <Typography variant="h6" component="h2" sx={{marginLeft: '25px'}}>
-                                { reviewScore || 'N/A'}
+                                <Typography variant="h6" component="h2" sx={{ml: '25px'}}>
+                                { currentData.total_review || 'N/A'}
                                 </Typography>
                                 <Button
                                     size='large'
@@ -375,14 +380,14 @@ export const Hub = () => {
                                     color='secondary'
                                     sx = {{top: '0px', marginLeft: '5px'}}
                                     onClick = {()=>{setReviewOpen(true); setReviewType('reviewScore')}}>
-                                        Update
+                                        Add Score
                                 </Button>
                             </Stack>
                             <Stack direction = 'row' justifyContent='start' alignItems = 'center'>
                                 <Typography variant="h6" component="h2">
                                 Reviews: 
                                 </Typography>
-                                <Typography variant="h6" component="h2" sx={{marginLeft: '70px'}}>
+                                <Typography variant="h6" component="h2" sx={{ml: '70px'}}>
                                 {currentData.review || 'N/A'} 
                                 </Typography>
                                 <Button
@@ -391,7 +396,7 @@ export const Hub = () => {
                                     color='secondary'
                                     sx = {{top: '0px', marginLeft: '5px'}}
                                     onClick = {() => {setReviewOpen(true); setReviewType('review')}}>
-                                        Update
+                                        Add Review
                                 </Button>
                             </Stack>
                         </Stack>
