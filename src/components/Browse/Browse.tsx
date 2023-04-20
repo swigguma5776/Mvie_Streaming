@@ -27,6 +27,7 @@ import background_image from '../../assets/images/baby_yoda_flip.jpeg';
 import { HomeNavBar } from '../sharedComponents/NavBar'; 
 import { InputText } from '../sharedComponents/InputFields';
 import { serverCalls, getMvieData } from '../../api';
+import { useGetPopularData } from '../../custom-hooks/FetchData'; 
 
 
 
@@ -57,15 +58,13 @@ const Root = styled("div")({
   }
 
 export const Browse = (props:BrowseForm) => {
+    const { popularData, getPopularData } = useGetPopularData()
     const { register, handleSubmit } = useForm({})
     const [browseData, setBrowseData ] = useState([])
     const [browseType, setType] = useState('')
     const dispatch = useDispatch();
     const store = useStore();
 
-    let apiKey = 'a09faf10309ad7aea8ecad3ee15ec80f';
-    let baseUrl = 'https://api.themoviedb.org/3/search/'
-    // let browseData:any = []
 
     const onSubmit = async (formdata:any, event: any) => {
         console.log(formdata.title)
@@ -77,6 +76,9 @@ export const Browse = (props:BrowseForm) => {
     }
 
     const addToWatchlist = async (formdata:any) => {
+        if (browseData.length == 0){
+          setType('movie')
+        }
         dispatch(chooseType(browseType))
         dispatch(choosePosterImage(formdata.poster_path))
         dispatch(chooseSummary(formdata.overview))
@@ -85,8 +87,8 @@ export const Browse = (props:BrowseForm) => {
         dispatch(chooseStreaming(await getMvieData.getStreaming(formdata.id, browseType)))
 
         console.log(store.getState())
-        let browseData: any = await store.getState()
-        let returnData = await serverCalls.createShow(browseData.show)
+        let data: any = await store.getState()
+        let returnData = await serverCalls.createShow(data.show)
         console.log(returnData.watch_id)
 
         let cast = await getMvieData.getCast(formdata.id, browseType)
@@ -103,6 +105,7 @@ export const Browse = (props:BrowseForm) => {
         window.location.reload()
         
     }
+    console.log(browseData)
 
     return(
         <Root>
@@ -130,14 +133,9 @@ export const Browse = (props:BrowseForm) => {
                 <Button size='large' variant='contained' color='primary' type='submit' sx={{height: '60px', width: '150px', borderRadius: '10px', marginTop: '10px'}}>Search</Button>
                 </form>
                 </Stack>
-                 {/* <Typography
-                variant = 'h4'
-                sx = {{marginTop: '100px', marginLeft: '15vh', color: "white"}}>
-                Your Watchlist
-                </Typography> */}
-            {/* Search Results! */}
-            <Grid container spacing={3} sx={{marginTop: '50px', marginRight: 'auto', marginLeft: 'auto', width: '80vw'}}>
-            {browseData.map((browse: any, index: any) => (
+              <Typography variant='h4' sx={{fontWeight: 500, color: 'white', width: '78vw', right: 0, mt: '50px', mr: 'auto', ml: 'auto'}}>{browseData.length == 0? 'Popular': 'Your Results'}</Typography>
+            <Grid container spacing={3} sx={{marginTop: '25px', marginRight: 'auto', marginLeft: 'auto', width: '80vw'}}>
+            {(browseData.length == 0 ? popularData : browseData).map((browse: any, index: any) => (
               <Grid item key={index} sm={12} md={3}>
                 <Card
                   sx={{

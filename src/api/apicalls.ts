@@ -250,6 +250,7 @@ export const getMvieData = {
     },
     getStreaming: async(movieId: string, type: string) => {
         let finalStreaming = ""
+        console.log(type, movieId)
         const response = await fetch(`${getMvieData.baseUrl}${type}/${movieId}/watch/providers?api_key=${getMvieData.apiKey}`)
         const results = await response.json()
         console.log(results.length)
@@ -269,6 +270,11 @@ export const getMvieData = {
         const response = await fetch(`${getMvieData.baseUrl}${type}/${movieId}/credits?api_key=${getMvieData.apiKey}&language=en-US`)
         const results = await response.json()
         return results.cast.slice(0,6)
+    },
+    getPopular: async() => {
+        const response = await fetch(`${getMvieData.baseUrl}movie/popular?api_key=${getMvieData.apiKey}&language=en-US&page=1`)
+        const results = await response.json()
+        return results.results
     }
 }
 

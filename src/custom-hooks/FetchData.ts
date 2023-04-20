@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'; 
-import { serverCalls } from '../api'; 
+import { serverCalls, getMvieData } from '../api'; 
 
 export const useGetData = () => {
     const [browseData, setData] = useState<any>([])
@@ -48,5 +48,22 @@ export const useGetHubData = () => {
     }, [])
 
     return {hubData, getHubData:handleDataFetch}
+}
+
+export const useGetPopularData = () => {
+    const [popularData, setData] = useState<any>([])
+
+    async function handleDataFetch(){
+        const result = await getMvieData.getPopular()
+        console.log(result)
+        setData(result)
+
+    }
+
+    useEffect( () => {
+        handleDataFetch()
+    }, [])
+
+    return {popularData, getPopularData:handleDataFetch}
 }
 

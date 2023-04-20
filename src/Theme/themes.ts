@@ -13,7 +13,7 @@ interface PaletteColor {
 export const theme = createTheme({
   palette: {
     primary: {
-      main: "#1B2929",
+      main: "#162121",
     },
     secondary: {
       main: "#aedcc0",

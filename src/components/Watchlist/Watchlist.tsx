@@ -62,15 +62,19 @@ export const Watchlist = () => {
     const [hubOpen, setHubOpen] = useState(false);
     const [reviewType, setReviewType] = useState<string>()
 
-    const navigate = useNavigate()
 
     const chooseColor = (type: string) => {
         return (type === 'movie') ? 'orange' : 'purple'
     }
 
+    // const delayOpening = async () => {
+    //     return(setTimeout(()=> {return true}, 3000))
+    // }
+
     const handleDetailsOpen = async () => {
         setCastData(await serverCalls.getCast(currentData.watch_id))
-        setDetailsOpen(true)
+        console.log(castData)
+        setTimeout(() => {setDetailsOpen(true)}, 1000)
       };
 
     const handleDetailsClose = () => {
@@ -85,8 +89,8 @@ export const Watchlist = () => {
         setHubOpen(false);
       };
 
-    console.log(currentData)
-    console.log(castData)
+    // console.log(currentData)
+    
 
     const deleteFromWatchlist = async (id: string) => {
         await serverCalls.deleteShow(id)
@@ -197,10 +201,8 @@ export const Watchlist = () => {
                     onClose={handleDetailsClose} 
                     aria-labelledby='form-dialog-title'
                     sx = {{
-                        marginRight: 'auto',
-                        marginLeft: 'auto',
-                        marginTop: '25vh',
-                        height: {xs: '1000px', sm: "500px"},
+                        margin: 'auto',
+                        height: {xs: '75vh', sm: "600px"},
                         width: {xs: '400px', sm: "1000px"}, 
                         borderRadius: '10px',
                         padding: '20px'
