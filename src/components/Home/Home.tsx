@@ -1,9 +1,11 @@
 import React from "react";
 import { styled } from "@mui/system";
-import { Button, Stack, Typography } from "@mui/material";
+import { Button, Stack, Typography, Link } from "@mui/material";
 import background_image from "../../assets/images/baby_yoda_flip.jpeg";
 import { HomeNavBar } from "../sharedComponents/NavBar";
 import { useNavigate } from "react-router-dom";
+import GitHubIcon from '@mui/icons-material/GitHub';
+import LinkedInIcon from '@mui/icons-material/LinkedIn';
 
 
 interface Props {
@@ -21,8 +23,17 @@ const Main = styled("main")({
   backgroundSize: "cover",
   backgroundRepeat: "no-repeat",
   backgroundPosition: "center",
-  position: "absolute",
+  backgroundAttachment: 'fixed',
+  paddingTop: '50px',
+  paddingBottom: '200px'
 });
+
+const LinkStyles = {
+  width: '60px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between'
+}
 
 
 
@@ -33,15 +44,15 @@ export const Home = (props: Props) => {
 
     return (
       <Root>
-        <div>Hello World</div>
         <HomeNavBar />
         <Main>
           <Stack
             direction = 'column'
             justifyContent='flex-end'
             marginLeft = {{xs: 'None', md: '100px'}}
+            width = "95%"
             alignItems = {{xs: 'center', md: 'start'}}
-            sx = {{ color: 'white', marginTop: '35vh', marginBottom: 'auto'}}>
+            sx = {{ color: 'white', marginTop: '30vh', marginBottom: 'auto'}}>
             <Typography variant="h4">welcome to....</Typography>
             <Typography variant="h1">{props.title}</Typography>
             <br />
@@ -54,7 +65,14 @@ export const Home = (props: Props) => {
                 onClick={() => navigate("/signin")}>
                 Sign Up for Free
             </Button>
-           
+            <Stack 
+              direction='row'
+              width= '150px'
+              justifyContent="space-between"
+              mt='200px'>
+              <Link sx={LinkStyles} variant='body1' underline="hover" target="_blank" href="https://github.com/swigguma5776/Mvie_Streaming"><GitHubIcon/> Github</Link>
+              <Link sx={LinkStyles} variant='body1' underline="hover" target="_blank" href="https://www.linkedin.com/in/alex-swiggum-profile/"><LinkedInIcon/> LinkedIn</Link>
+            </Stack>
           </Stack>
         </Main>
       </Root>
