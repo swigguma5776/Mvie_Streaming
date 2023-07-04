@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from streaming_app.helpers import token_required
-from streaming_app.models import Show, ShowCast, Cast, Hub, db, show_schema, shows_schema, cast_schema, casts_schema
+from streaming_app.models import Show, ShowCast, Cast, ShowHub, UserHub, UserWatchHub, Hub, db, show_schema, shows_schema, cast_schema, casts_schema, hub_schema, hubs_schema
 
 
 api = Blueprint('api', __name__, url_prefix="/api")
@@ -52,29 +52,31 @@ def create_show(token):
 def create_cast(token): #multiple calls will be made on frontend for multiple cast members per show
     watch_id = request.json['watchId'] #get this on frontend side after creating Show model (will be used for ShowCast Model). Will allow app to wait until it has watchID if done on frontEnd
     character_name = request.json['characterName'] #used for ShowCast Model
-    first_name = request.json['firstName'] #below all for Cast Model
-    last_name = request.json['lastName']
+    full_name = request.json['fullName'] #below all for Cast Model
     cast_image = request.json['castImage']
     bio_link = request.json['bioLink']
 
 
     #Query into Cast model to see if Cast member already exists (since can be in a ton of other movies that may be on watchlist already)
-    cast_members = Cast.query.filter_by(last_name = last_name).all()
+    cast_members = Cast.query.filter_by(full_name = full_name).all()
     if cast_members:
         for cast in cast_members:
             print(cast)
-            if cast.first_name == first_name:
+            if cast.full_name == full_name:
                 show_cast = ShowCast(character_name, watch_id, cast.cast_id)
                 db.session.add(show_cast)
                 db.session.commit()
 
-                return (f"""Cast Member {first_name.title(), last_name.title()} already exists in 
+                print(f"""Cast Member {full_name.title()} already exists in 
                         the database but added to ShowCast database""")
+                
+                response = cast_schema.dump(cast)
+                return jsonify(response)
             
     # existing_shows = ShowCast.query.filter_by(watch_id = watch_id).all()
 
     
-    cast = Cast(first_name, last_name, cast_image, bio_link)
+    cast = Cast(full_name, cast_image, bio_link)
     cast_id = cast.cast_id
     show_cast = ShowCast(character_name, watch_id, cast_id)
 
@@ -100,18 +102,19 @@ def get_shows(token):
     response = shows_schema.dump(shows)
     return jsonify(response)
 
-@api.route('/cast', methods=['GET'])
+@api.route('/cast/<id>', methods=['GET'])
 @token_required
-def get_casts(token):
-    watch_id = request.json['watchId'] #get this on frontend side after creating Show model (will be used for ShowCast Model). Will allow app to wait until it has watchID if done on frontEnd
-
-    show_cast = ShowCast.query.filter_by(watch_id = watch_id).all()
+def get_casts(token, id):
+    print(id)
+    show_cast = ShowCast.query.filter_by(watch_id = id).all() #get this on frontend side after creating Show model (will be used for ShowCast Model). Will allow app to wait until it has watchID if done on frontEnd
     casts = []
 
     for sc in show_cast:
         casts.append(Cast.query.filter_by(cast_id = sc.cast_id).all()[0])
-
+        
+    
     response = casts_schema.dump(casts)
+    print(response)
     return jsonify(response)
 
 # UPDATE Routes for Show  Objects
@@ -124,11 +127,11 @@ def get_casts(token):
 @token_required
 def update_show(token, id):
     show = Show.query.get(id) # grab carbon instance
-    have_watched = request.json['haveWatched']
-    if have_watched != None:
-        show.have_watched = have_watched
-    else:
+    if request.json['haveWatched'] != None:
+        show.have_watched = request.json['haveWatched']
+    elif request.json['review'] != None:
         show.review = request.json['review']
+    else:
         show.review_score = request.json['reviewScore']
 
     db.session.commit()
@@ -148,9 +151,11 @@ def delete_show(token, id):
     show = Show.query.get(id)
     print(show)
 
-    hub = Hub.query.filter_by(watch_id = f"HUB{show.watch_id}").all()
-    if not hub:
+    showhub = ShowHub.query.filter_by(watch_id = f"HUB{show.watch_id}").all()
+    if not showhub:
+        print('we are in the hub if')
         show_cast = ShowCast.query.filter_by(watch_id = show.watch_id).all()
+        print(show_cast)
         if show_cast:
             for sc in show_cast:
                 db.session.delete(sc)
@@ -161,6 +166,8 @@ def delete_show(token, id):
 
     response = show_schema.dump(show)
     return jsonify(response)
+  
+# ===================================== #
 
 # THE HUB (CREATE, READ, UPDATE, DELETE)
 
@@ -172,31 +179,85 @@ def delete_show(token, id):
     # 4. On front end a unique token will be created by user for their hub. This will be Foreign Key (Do I want to create a database 
     #   specific to HUB users associated with who created that HUB & when?)
 
-@api.route('/hub', methods = ['POST'])
+@api.route('/hub/<hubname>', methods = ['POST'])
 @token_required
-def create_hub(token):
-    watch_id = request.json['watchId']
+def create_hub(token, hubname):
+    watch_id = request.json['watch_id']
     title = request.json['title']
     type_ = request.json['type_']
-    poster_image = request.json['posterImage']
+    poster_image = request.json['poster_image']
     genre = request.json['genre']
     summary = request.json['summary']
     rating = request.json['rating']
     streaming = request.json['streaming']
-    review_score = request.json['reviewScore']
+    review_score = request.json['review_score']
+    if review_score:
+        how_many_reviews = 1
+    else:
+        how_many_reviews = None
     review = request.json['review']
-    have_watched = request.json['haveWatched']
+    total_review = review_score
+    have_watched = request.json['have_watched']
     user_id = token
 
     print(f" {title.title()} has been added to your HUB database!")
 
-    hub = Hub(watch_id, title, type_, poster_image, genre, summary, rating, streaming, review_score=review_score, 
-                review=review, have_watched=have_watched, user_id = user_id)
-
-    db.session.add(hub)
+    showhub = ShowHub(watch_id, title, type_, poster_image, genre, summary, rating, streaming, review_score=review_score, 
+                review=review, how_many_reviews=how_many_reviews, total_review=total_review, have_watched=have_watched)
+    
+    print(showhub.watch_id)
+    
+    userhubs = UserHub.query.filter_by(user_id = user_id).all()
+    print(userhubs)
+    hubs = []
+    for userhub in userhubs:
+      hubs.append(Hub.query.filter_by(hub_id = userhub.hub_id).all()[0])
+    print(hubs)
+    for hub in hubs:
+        print(hubname)
+        print('in the hub forlooop')
+        if hub.hub_name == hubname: 
+            print('we adding to watchhub')
+            watchhub = UserWatchHub(hub.hub_id, showhub.watch_id, user_id)
+          
+    
+    db.session.add(watchhub)
+    db.session.add(showhub)
     db.session.commit() 
 
-    response = show_schema.dump(hub)
+    response = show_schema.dump(showhub)
+    return jsonify(response)
+  
+  
+  
+@api.route('/userhub', methods = ['POST'])
+@token_required
+def create_userhub(token):
+    hub_name = request.json['hubName']
+    
+    hub = Hub(hub_name, token)
+    
+    userhub = UserHub(hub.hub_id, token)
+    
+    db.session.add(hub)
+    db.session.add(userhub)
+    db.session.commit()
+    
+    response = hub_schema.dump(hub)
+    return jsonify(response)
+  
+  
+@api.route('/userhub/<hubname>', methods = ['POST'])
+@token_required
+def find_userhub(token, hubname):
+    hub = Hub.query.filter_by(hub_name = hubname).all()[0]
+    
+    userhub = UserHub(hub.hub_id, token)
+    
+    db.session.add(userhub)
+    db.session.commit()
+    
+    response = hub_schema.dump(hub)
     return jsonify(response)
 
 
@@ -208,11 +269,44 @@ def create_hub(token):
     # 3. For every cast member (based on watch_id from ShowCast model) return Cast object (will need to .push() all cast objects to a list on front end)
 
 
-@api.route('/hub', methods=['GET'])
+@api.route('/hub/<hubname>', methods=['GET'])
 @token_required
-def get_hub(token):
-    shows = Hub.query.filter_by(user_id = token).all()
+def get_hub(token, hubname):
+    userhubs = UserHub.query.filter_by(user_id = token).all()
+    print(userhubs)
+    hubs = []
+    for userhub in userhubs:
+        hubs.append(Hub.query.filter_by(hub_id = userhub.hub_id).all()[0])
+    print(hubs)
+    for hub in hubs:
+        if hub.hub_name == hubname:
+            print(hub.hub_name)
+            hub_id = hub.hub_id 
+            
+    watchhubs = UserWatchHub.query.filter_by(hub_id = hub_id).all()
+    print(watchhubs)
+    shows = []
+    
+    for wh in watchhubs:
+        shows.append(ShowHub.query.filter_by(watch_id = wh.watch_id).all()[0])
+    
+    
     response = shows_schema.dump(shows)
+    print(response)
+    return jsonify(response)
+  
+  
+@api.route('/userhub', methods=['GET'])
+@token_required
+def get_userhub(token):
+    userhubs = UserHub.query.filter_by(user_id = token).all()
+    print(userhubs)
+    hubs = []
+    for userhub in userhubs:
+        hubs.append(Hub.query.filter_by(hub_id = userhub.hub_id).all()[0])
+        
+    print(hubs)
+    response = hubs_schema.dump(hubs)
     return jsonify(response)
 
 
@@ -228,31 +322,38 @@ def get_hub(token):
 @api.route('/hub/<id>', methods = ['PUT', 'POST'])
 @token_required
 def update_hub(token, id):
-    hub = Hub.query.get(id) # grab hub instance
-    have_watched = request.json['haveWatched']
-    if have_watched != None:
-        hub.have_watched += ", " + have_watched
-    else:
+    hub = ShowHub.query.get(id) # grab hub instance
+  
+    if request.json['haveWatched'] != None:
+        hub.have_watched += ", " + str(request.json['haveWatched'])
+    elif request.json['review'] != None:
         if hub.review:
             hub.review += ", " + request.json['review']
-            hub.review_score += ", " + request.json['reviewScore']
         else:
             hub.review = request.json['review']
+            
+    else:
+        if hub.review_score:
+            hub.review_score += ", " + request.json['reviewScore']
+        else:
             hub.review_score = request.json['reviewScore']
-
+          
         if not hub.how_many_reviews:
             hub.how_many_reviews = 1
         else:
             hub.how_many_reviews += 1 
+            
+        hub.total_review = round(sum([float(score) for score in hub.review_score.split(',')])/ float(hub.how_many_reviews), 2)
+            
+  
 
-        # hub.how_many_reviews = hub.get(hub.how_many_reviews, 0) + 1
-
-    print(round(sum([float(score) for score in hub.review_score.split(',')])/ float(hub.how_many_reviews), 2))
+    # print(round(sum([float(score) for score in hub.review_score.split(',')])/ float(hub.how_many_reviews), 2))
     
 
     db.session.commit()
     response = show_schema.dump(hub)
     return jsonify(response)
+  
     
 
 # DELETE Routes for HUB Objects (Keep Cast). Should this be archived instead of deleted? 
@@ -263,12 +364,19 @@ def update_hub(token, id):
 @api.route('/hub/<id>', methods = ['DELETE'])
 @token_required
 def delete_hub(token, id):
-    hub = Hub.query.get(id)
+    hub = ShowHub.query.get(id)
+    watchhub = UserWatchHub.query.filter_by(watch_id = id).all()
     print(hub)
+    print(watchhub)
+    
+    for wh in watchhub:
+        db.session.delete(wh)
 
     show = Show.query.filter_by(watch_id = hub.watch_id[3:]).all()
+    print(show)
     if not show:
-        show_cast = ShowCast.query.filter_by(watch_id = show.watch_id).all()
+        show_cast = ShowCast.query.filter_by(watch_id = hub.watch_id[3:]).all()
+        print(show_cast)
         if show_cast:
             for sc in show_cast:
                 db.session.delete(sc)
